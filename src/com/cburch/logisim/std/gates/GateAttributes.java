@@ -80,6 +80,22 @@ class GateAttributes extends AbstractAttributeSet {
 			.forOption("out", Strings.getter("gateOutputAttr"),
 					new AttributeOption[] { OUTPUT_01, OUTPUT_0Z, OUTPUT_Z1 });
 
+	static final AttributeOption INITIAL_OUTPUT_0 = new AttributeOption("0",
+			Strings.getter("gateInitialOutput0"));
+	static final AttributeOption INITIAL_OUTPUT_1 = new AttributeOption("1",
+			Strings.getter("gateInitialOutput1"));
+	static final AttributeOption INITIAL_OUTPUT_Z = new AttributeOption("floating",
+			Strings.getter("gateInitialOutputZ"));
+	static final AttributeOption INITIAL_OUTPUT_E = new AttributeOption("error",
+			Strings.getter("gateInitialOutputE"));
+	static final AttributeOption INITIAL_OUTPUT_P = new AttributeOption("propagate",
+			Strings.getter("gateInitialOutputP"));
+	public static final Attribute<AttributeOption> ATTR_INITIAL_OUTPUT = Attributes
+			.forOption("initial", Strings.getter("gateInitialOutputAttr"),
+					new AttributeOption[] { INITIAL_OUTPUT_0, INITIAL_OUTPUT_1, 
+					    INITIAL_OUTPUT_Z, INITIAL_OUTPUT_E, INITIAL_OUTPUT_P });
+
+
 	Direction facing = Direction.EAST;
 	BitWidth width = BitWidth.ONE;
 	AttributeOption size = SIZE_MEDIUM;
@@ -87,6 +103,7 @@ class GateAttributes extends AbstractAttributeSet {
 	int negated = 0;
 	AttributeOption out = OUTPUT_01;
 	AttributeOption xorBehave;
+	AttributeOption initial = INITIAL_OUTPUT_P;
 	String label = "";
 	Font labelFont = StdAttr.DEFAULT_LABEL_FONT;
 
@@ -121,6 +138,8 @@ class GateAttributes extends AbstractAttributeSet {
 			return (V) Integer.valueOf(inputs);
 		if (attr == ATTR_OUTPUT)
 			return (V) out;
+		if (attr == ATTR_INITIAL_OUTPUT)
+			return (V) initial;
 		if (attr == ATTR_XOR)
 			return (V) xorBehave;
 		if (attr instanceof NegateAttribute) {
@@ -159,6 +178,8 @@ class GateAttributes extends AbstractAttributeSet {
 			xorBehave = (AttributeOption) value;
 		} else if (attr == ATTR_OUTPUT) {
 			out = (AttributeOption) value;
+		} else if (attr == ATTR_INITIAL_OUTPUT) {
+			initial = (AttributeOption) value;
 		} else if (attr instanceof NegateAttribute) {
 			int index = ((NegateAttribute) attr).index;
 			if (((Boolean) value).booleanValue()) {

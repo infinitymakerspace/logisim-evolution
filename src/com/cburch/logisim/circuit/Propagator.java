@@ -357,6 +357,7 @@ public class Propagator {
 		toProcess.clear();
 		root.reset();
 		isOscillating = false;
+                ticks = 0;
 	}
 
 	//

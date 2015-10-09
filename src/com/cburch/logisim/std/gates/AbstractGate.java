@@ -609,7 +609,20 @@ abstract class AbstractGate extends InstanceFactory {
 		if (numInputs == 0 || error) {
 			out = Value.createError(attrs.width);
 		} else {
-			out = computeOutput(inputs, numInputs, state);
+			Object initial = attrs.initial;
+			if (initial != GateAttributes.INITIAL_OUTPUT_P && state.getTickCount() == 0) {
+				if (initial == GateAttributes.INITIAL_OUTPUT_0) {
+					out = Value.createKnown(attrs.width, 0);
+				} else if (initial == GateAttributes.INITIAL_OUTPUT_1) {
+					out = Value.createKnown(attrs.width, 1);
+				} else if (initial == GateAttributes.INITIAL_OUTPUT_Z) {
+					out = Value.createUnknown(attrs.width);
+				} else {
+					out = Value.createError(attrs.width);
+				}
+			} else {
+				out = computeOutput(inputs, numInputs, state);
+			}
 			out = pullOutput(out, attrs.out);
 		}
 		state.setPort(0, out, GateAttributes.DELAY);

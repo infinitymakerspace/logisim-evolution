@@ -40,7 +40,8 @@ class GateAttributeList extends AbstractList<Attribute<?>> {
 	private static final Attribute<?>[] BASE_ATTRIBUTES = { StdAttr.FACING,
 			StdAttr.WIDTH, GateAttributes.ATTR_SIZE,
 			GateAttributes.ATTR_INPUTS, GateAttributes.ATTR_OUTPUT,
-			StdAttr.LABEL, StdAttr.LABEL_FONT, };
+			GateAttributes.ATTR_INITIAL_OUTPUT,StdAttr.LABEL,
+                        StdAttr.LABEL_FONT, };
 
 	private GateAttributes attrs;
 
