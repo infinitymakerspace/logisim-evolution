@@ -42,6 +42,7 @@ import com.cburch.logisim.LogisimVersion;
 import com.cburch.logisim.analyze.model.Expression;
 import com.cburch.logisim.analyze.model.Expressions;
 import com.cburch.logisim.circuit.ExpressionComputer;
+import com.cburch.logisim.circuit.PropDelayData;
 import com.cburch.logisim.comp.TextField;
 import com.cburch.logisim.data.Attribute;
 import com.cburch.logisim.data.AttributeSet;
@@ -52,6 +53,7 @@ import com.cburch.logisim.data.Location;
 import com.cburch.logisim.data.Value;
 import com.cburch.logisim.file.Options;
 import com.cburch.logisim.instance.Instance;
+import com.cburch.logisim.instance.InstanceData;
 import com.cburch.logisim.instance.InstanceFactory;
 import com.cburch.logisim.instance.InstancePainter;
 import com.cburch.logisim.instance.InstanceState;
@@ -62,6 +64,7 @@ import com.cburch.logisim.tools.WireRepair;
 import com.cburch.logisim.tools.WireRepairData;
 import com.cburch.logisim.tools.key.BitWidthConfigurator;
 import com.cburch.logisim.tools.key.IntegerConfigurator;
+import com.cburch.logisim.tools.key.KeyConfigurator;
 import com.cburch.logisim.tools.key.JoinedConfigurator;
 import com.cburch.logisim.util.GraphicsUtil;
 import com.cburch.logisim.util.Icons;
@@ -105,9 +108,11 @@ abstract class AbstractGate extends InstanceFactory {
 		super(name, desc);
 		this.isXor = isXor;
 		setFacingAttribute(StdAttr.FACING);
-		setKeyConfigurator(JoinedConfigurator.create(new IntegerConfigurator(
-				GateAttributes.ATTR_INPUTS, 2, GateAttributes.MAX_INPUTS, 0),
-				new BitWidthConfigurator(StdAttr.WIDTH)));
+		setKeyConfigurator(JoinedConfigurator.create(new KeyConfigurator[] {
+                                new IntegerConfigurator(GateAttributes.ATTR_INPUTS, 1, GateAttributes.MAX_INPUTS, 0),
+                                new IntegerConfigurator(GateAttributes.ATTR_PROP_DELAY, 0, GateAttributes.MAX_PROP_DELAY, 0),
+				new BitWidthConfigurator(StdAttr.WIDTH)
+                            }));
 	}
 
 	protected abstract Expression computeExpression(Expression[] inputs,
@@ -580,6 +585,11 @@ abstract class AbstractGate extends InstanceFactory {
 
 	@Override
 	public void propagate(InstanceState state) {
+		PropDelayData data = (PropDelayData) state.getData();
+		if (data == null) {
+			data = new PropDelayData();
+			state.setData(data);
+		}
 		GateAttributes attrs = (GateAttributes) state.getAttributeSet();
 		int inputCount = attrs.inputs;
 		int negated = attrs.negated;
@@ -625,7 +635,21 @@ abstract class AbstractGate extends InstanceFactory {
 			}
 			out = pullOutput(out, attrs.out);
 		}
-		state.setPort(0, out, GateAttributes.DELAY);
+
+                Value prev = state.getPortValue(0);
+                if (state.getTickCount() == 0) {
+                        state.setPort(0, out, GateAttributes.DELAY);
+                } else {
+                    if (prev != out) {
+                        data.propagationTime++;
+                        if (data.propagationTime > attrs.propDelay) {
+                            state.setPort(0, out, GateAttributes.DELAY);
+                            data.propagationTime = 0;
+                        }
+                    } else {
+                        data.propagationTime = 0;
+                    }
+                }
 	}
 
 	protected void setAdditionalWidth(int value) {

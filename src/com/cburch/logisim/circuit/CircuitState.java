@@ -512,6 +512,15 @@ public class CircuitState implements InstanceData {
 
 	boolean tick(int ticks) {
 		boolean ret = false;
+                for (Component comp : circuit.getNonWires()) {
+                    Object data = getData(comp);
+                        if (data instanceof PropDelayData) {
+                            PropDelayData pd = (PropDelayData)data;
+                            if (pd.propagationTime != 0) {
+                                markComponentAsDirty(comp);
+                            }
+                        }
+                }
 		for (Component clock : circuit.getClocks()) {
 			ret |= Clock.tick(this, ticks, clock);
 		}

@@ -44,6 +44,7 @@ import com.cburch.logisim.util.SyntaxChecker;
 
 class GateAttributes extends AbstractAttributeSet {
 	static final int MAX_INPUTS = 32;
+	static final int MAX_PROP_DELAY = 30;
 	static final int DELAY = 1;
 
 	static final AttributeOption SIZE_NARROW = new AttributeOption(
@@ -59,7 +60,7 @@ class GateAttributes extends AbstractAttributeSet {
 					new AttributeOption[] { SIZE_NARROW, SIZE_MEDIUM, SIZE_WIDE });
 
 	public static final Attribute<Integer> ATTR_INPUTS = Attributes
-			.forIntegerRange("inputs", Strings.getter("gateInputsAttr"), 2,
+			.forIntegerRange("inputs", Strings.getter("gateInputsAttr"), 1,
 					MAX_INPUTS);
 
 	static final AttributeOption XOR_ONE = new AttributeOption("1",
@@ -95,6 +96,10 @@ class GateAttributes extends AbstractAttributeSet {
 					new AttributeOption[] { INITIAL_OUTPUT_0, INITIAL_OUTPUT_1, 
 					    INITIAL_OUTPUT_Z, INITIAL_OUTPUT_E, INITIAL_OUTPUT_P });
 
+	public static final Attribute<Integer> ATTR_PROP_DELAY = Attributes
+			.forIntegerRange("propDelay", Strings.getter("gatePropDelayAttr"), 0,
+					MAX_PROP_DELAY);
+
 
 	Direction facing = Direction.EAST;
 	BitWidth width = BitWidth.ONE;
@@ -104,6 +109,7 @@ class GateAttributes extends AbstractAttributeSet {
 	AttributeOption out = OUTPUT_01;
 	AttributeOption xorBehave;
 	AttributeOption initial = INITIAL_OUTPUT_P;
+        int propDelay = 0;
 	String label = "";
 	Font labelFont = StdAttr.DEFAULT_LABEL_FONT;
 
@@ -142,6 +148,8 @@ class GateAttributes extends AbstractAttributeSet {
 			return (V) initial;
 		if (attr == ATTR_XOR)
 			return (V) xorBehave;
+		if (attr == ATTR_PROP_DELAY)
+			return (V) Integer.valueOf(propDelay);
 		if (attr instanceof NegateAttribute) {
 			int index = ((NegateAttribute) attr).index;
 			int bit = (negated >> index) & 1;
@@ -180,6 +188,9 @@ class GateAttributes extends AbstractAttributeSet {
 			out = (AttributeOption) value;
 		} else if (attr == ATTR_INITIAL_OUTPUT) {
 			initial = (AttributeOption) value;
+		} else if (attr == ATTR_PROP_DELAY) {
+			propDelay = ((Integer) value).intValue();
+			fireAttributeListChanged();
 		} else if (attr instanceof NegateAttribute) {
 			int index = ((NegateAttribute) attr).index;
 			if (((Boolean) value).booleanValue()) {
